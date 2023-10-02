@@ -58,11 +58,11 @@ const uploadFile = (base64Image, fileNamePlusIp) => {
   });
 };
 
-const getIpAddress = (req) => {
-  const ipAddress =
-    req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-  return ipAddress;
-};
+// const getIpAddress = (req) => {
+//   const ipAddress =
+//     req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+//   return ipAddress;
+// };
 
 app.post("/api/photo", (req, res) => {
   upload(req, res, (err) => {
@@ -88,7 +88,12 @@ app.post("/api/photo", (req, res) => {
     // Log the image name and IP address
     console.log(`Image Name: ${fileName}`);
     console.log(`Client IP Address: ${ipAddress}`);
-    const fileNamePlusIp = fileName + "/" + ipAddress;
+
+    const fileExtension = ".jpeg"; // Change this if the file extension is different
+    const fileNamePlusIp = fileName.replace(
+      ".jpeg",
+      "-" + ipAddress + fileExtension
+    );
     console.log(fileNamePlusIp);
     // console.log(`encoded image : ${base64Image}`);
 
@@ -97,8 +102,6 @@ app.post("/api/photo", (req, res) => {
     uploadFile(base64Image, fileNamePlusIp);
   });
 });
-
-
 
 // Start the server
 app.listen(port, () => {
