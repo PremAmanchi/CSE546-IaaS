@@ -22,10 +22,10 @@ const sendMessage = (output) => {
     MessageAttributes: {
       output: {
         DataType: "String",
-        StringValue: output,
+        StringValue: output.split("=")[1],
       },
     },
-    MessageBody: "SQS Response.",
+    MessageBody: output.split("=")[0],
     QueueUrl: responseQueueURL,
   };
 
@@ -38,6 +38,8 @@ const sendMessage = (output) => {
   });
 };
 
+
+
 fs.readFile(
   "/Users/premkumaramanchi/CODE/DEV/CSE546-IaaS/APP-TIER/controller/output.txt",
   "utf8",
@@ -46,7 +48,7 @@ fs.readFile(
     const key = data.split("#")[0];
     const value = data.split("#")[1];
     //   value = value.replace("\n", "").replace("\r", "");
-    const file_content = key + " : " + value ;
+    const file_content = key + "=" + value;
     const fileName = key.split(".")[0] + ".txt";
     fs.unlinkSync(
       "/Users/premkumaramanchi/CODE/DEV/CSE546-IaaS/APP-TIER/classifier/" + key
@@ -65,6 +67,7 @@ fs.readFile(
         console.log("Result uploaded to S3:", data.Location);
 
         // Send the message to SQS after uploading to S3
+        console.log(file_content);
         sendMessage(file_content);
       }
     });
