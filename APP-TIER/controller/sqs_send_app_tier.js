@@ -67,6 +67,4 @@ fs.readFile("output.txt", "utf8", (err, data) => {
     uploadFile(fileName);
     fs.unlinkSync("output.txt");
     fs.unlinkSync(fileName);
-
-    
 });

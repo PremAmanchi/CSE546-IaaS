@@ -89,9 +89,9 @@ app.post("/api/photo", (req, res) => {
     console.log(`Image Name: ${fileName}`);
     console.log(`Client IP Address: ${ipAddress}`);
 
-    const fileExtension = ".jpeg"; // Change this if the file extension is different
+    const fileExtension = ".JPEG"; // Change this if the file extension is different
     const fileNamePlusIp = fileName.replace(
-      ".jpeg",
+      ".JPEG",
       "-" + ipAddress + fileExtension
     );
     console.log(fileNamePlusIp);
