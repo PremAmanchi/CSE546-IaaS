@@ -52,9 +52,10 @@ const uploadFile = (base64Image, fileNamePlusIp) => {
 };
 
 // Function to Receive Messages from SQS
-function receiveMessages() {
+const receiveMessages = async () => {
   // set some max num messages to poll from queue
-  const maxMessagesToReceive = 10;
+  const maxMessagesToReceive = 1;
+  // console.log("insideReceive");
 
   const sqsParams = {
     QueueUrl: responseQueueURL,
@@ -62,14 +63,16 @@ function receiveMessages() {
     MessageAttributeNames: ["output"],
     WaitTimeSeconds: 20,
   };
+  console.log("belowSQS");
 
-  SQS.receiveMessage(sqsParams, function (err, data) {
-    if (err) {
-      console.log("Receive Error", err);
-    } else if (data.Messages) {
+  try {
+    const data = await SQS.receiveMessage(sqsParams).promise();
+    console.log("underSQS");
+
+    if (data.Messages) {
       console.log(`Received ${data.Messages.length} messages.`);
 
-      data.Messages.forEach((message) => {
+      for (const message of data.Messages) {
         const messageBody = message.Body;
         const outputAttribute = message.MessageAttributes.output.StringValue;
 
@@ -82,19 +85,17 @@ function receiveMessages() {
           ReceiptHandle: message.ReceiptHandle,
         };
 
-        SQS.deleteMessage(deleteParams, function (err, data) {
-          if (err) {
-            console.log("Delete Error", err);
-          } else {
-            console.log("Message Deleted", data);
-          }
-        });
-      });
+        const deleteResponse = await SQS.deleteMessage(deleteParams).promise();
+
+        console.log("Message Deleted", deleteResponse);
+      }
     } else {
       console.log("No messages found.");
     }
-  });
-}
+  } catch (err) {
+    console.error("Receive Error", err);
+  }
+};
 
 app.post("/api/photo", (req, res) => {
   upload(req, res, (err) => {
@@ -118,26 +119,36 @@ app.post("/api/photo", (req, res) => {
       ".JPEG",
       "-" + ipAddress + fileExtension
     );
-
+    dataDict[ipAddress] = fileNamePlusIp;
+    const dictSize = Object.keys(dataDict).length;
+    console.log("dataDict Size : " + dictSize);
     res.send("File uploaded! Starting the process...");
 
     uploadFile(base64Image, fileNamePlusIp);
   });
 });
 
-app.get("/receive", function (req, res) {
+app.get("/receive", async function (req, res) {
   const clientIp = req.ip;
   const existingKey = dataDict[clientIp];
+  const dictSize = Object.keys(dataDict).length;
+  console.log("dataDict Size : " + dictSize);
 
-  if (!existingKey) {
+  if (existingKey == null) {
     console.log(`No image uploaded from IP address: ${clientIp}`);
-    res.render("index", { dataDict, dictSize: Object.keys(dataDict).length });
+    res.send(`No image uploaded from IP address: ${clientIp}`);
+    // res.render("index", { dataDict, dictSize: Object.keys(dataDict).length });
   } else {
+    console.log(existingKey);
     const newKey = existingKey;
     let result = resultDict[newKey];
+    const resDictSize = Object.keys(resultDict).length;
+    console.log("dataDict Size : " + resDictSize);
 
     while (result == null) {
       receiveMessages();
+      const resDictSize = Object.keys(resultDict).length;
+      console.log("dataDict Size : " + resDictSize);
       result = resultDict[newKey];
     }
 

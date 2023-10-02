@@ -1,7 +1,6 @@
 const AWS = require("aws-sdk");
 AWS.config.update({ region: "us-east-1" });
 const fs = require("fs");
-const shell = require("shelljs");
 
 // Configure AWS
 AWS.config.update({
@@ -39,8 +38,10 @@ const sendMessage = (output) => {
   });
 };
 
+
+
 fs.readFile(
-  "/home/ubuntu/app-tier/controller/output.txt",
+  "/Users/premkumaramanchi/CODE/DEV/CSE546-IaaS/APP-TIER/controller/output.txt",
   "utf8",
   (err, data) => {
     console.log(data);
@@ -49,7 +50,9 @@ fs.readFile(
     //   value = value.replace("\n", "").replace("\r", "");
     const file_content = key + "=" + value;
     const fileName = key.split(".")[0] + ".txt";
-    fs.unlinkSync("/home/ubuntu/app-tier/classifier/" + key);
+    fs.unlinkSync(
+      "/Users/premkumaramanchi/CODE/DEV/CSE546-IaaS/APP-TIER/classifier/" + key
+    );
     // Save the result as a text file in S3
     const s3Params = {
       Bucket: BUCKET_NAME,
@@ -72,15 +75,6 @@ fs.readFile(
 );
 
 // Clean up local files
-fs.unlinkSync("/home/ubuntu/app-tier/controller/output.txt");
-
-// check for more messages to process or terminate
-SQS.receiveMessage(receiveParams, function (err, data) {
-  if (err) {
-    console.log("Receive Error", err);
-  } else if (data.Messages) {
-    shell.exec("/home/ubuntu/app-tier/app_tier.sh");
-  } else {
-    shell.exec("/home/ubuntu/app-tier/terminate.sh");
-  }
-});
+fs.unlinkSync(
+  "/Users/premkumaramanchi/CODE/DEV/CSE546-IaaS/APP-TIER/controller/output.txt"
+);

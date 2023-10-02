@@ -1,7 +1,5 @@
 const AWS = require("aws-sdk");
 const fs = require("fs");
-const shell = require("shelljs");
-
 
 // Configure AWS
 AWS.config.update({
@@ -65,7 +63,8 @@ SQS.receiveMessage(sqsParams, function (err, data) {
 
     // Save the image locally
     fs.writeFileSync(
-      "/home/ubuntu/app-tier/classifier/" + imagePlusIp,
+      "/Users/premkumaramanchi/CODE/DEV/CSE546-IaaS/APP-TIER/classifier/" +
+        imagePlusIp,
       imageBuffer
     );
 
@@ -82,6 +81,5 @@ SQS.receiveMessage(sqsParams, function (err, data) {
     });
   } else {
     console.log("No messages found.");
-    shell.exec("/home/ubuntu/app-tier/terminate.sh");
   }
 });
