@@ -38,10 +38,8 @@ const sendMessage = (output) => {
   });
 };
 
-
-
 fs.readFile(
-  "/Users/premkumaramanchi/CODE/DEV/CSE546-IaaS/APP-TIER/controller/output.txt",
+  "/Users/premkumaramanchi/CODE/DEV/CSE546-IaaS/APP-TIER-LOCAL/controller/output.txt",
   "utf8",
   (err, data) => {
     console.log(data);
@@ -51,7 +49,8 @@ fs.readFile(
     const file_content = key + "=" + value;
     const fileName = key.split(".")[0] + ".txt";
     fs.unlinkSync(
-      "/Users/premkumaramanchi/CODE/DEV/CSE546-IaaS/APP-TIER/classifier/" + key
+      "/Users/premkumaramanchi/CODE/DEV/CSE546-IaaS/APP-TIER-LOCAL/classifier/" +
+        key
     );
     // Save the result as a text file in S3
     const s3Params = {
@@ -76,5 +75,5 @@ fs.readFile(
 
 // Clean up local files
 fs.unlinkSync(
-  "/Users/premkumaramanchi/CODE/DEV/CSE546-IaaS/APP-TIER/controller/output.txt"
+  "/Users/premkumaramanchi/CODE/DEV/CSE546-IaaS/APP-TIER-LOCAL/controller/output.txt"
 );

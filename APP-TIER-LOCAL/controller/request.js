@@ -63,7 +63,7 @@ SQS.receiveMessage(sqsParams, function (err, data) {
 
     // Save the image locally
     fs.writeFileSync(
-      "/Users/premkumaramanchi/CODE/DEV/CSE546-IaaS/APP-TIER/classifier/" +
+      "/Users/premkumaramanchi/CODE/DEV/CSE546-IaaS/APP-TIER-LOCAL/classifier/" +
         imagePlusIp,
       imageBuffer
     );

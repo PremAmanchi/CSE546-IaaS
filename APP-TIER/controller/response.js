@@ -14,6 +14,8 @@ const S3 = new AWS.S3();
 
 const BUCKET_NAME = "output-images-cse546";
 
+const requestQueueURL =
+  "https://sqs.us-east-1.amazonaws.com/548832462032/CSE-546-PROJECT-1-REQUEST-QUEUE";
 const responseQueueURL =
   "https://sqs.us-east-1.amazonaws.com/548832462032/CSE-546-PROJECT-1-RESPONSE-QUEUE";
 
@@ -73,6 +75,14 @@ fs.readFile(
 
 // Clean up local files
 fs.unlinkSync("/home/ubuntu/app-tier/controller/output.txt");
+
+// SQS Parameters
+const receiveParams = {
+  // MessageAttributeNames: ["All"],
+  QueueUrl: requestQueueURL,
+  VisibilityTimeout: 10,
+  WaitTimeSeconds: 20,
+};
 
 // check for more messages to process or terminate
 SQS.receiveMessage(receiveParams, function (err, data) {

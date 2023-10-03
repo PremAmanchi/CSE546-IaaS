@@ -12,7 +12,7 @@ import sys
 import time
 
 url = str(sys.argv[1])
-# img = Image.open(urlopen(url))
+#img = Image.open(urlopen(url))
 img = Image.open(url)
 
 model = models.resnet18(pretrained=True)
@@ -26,9 +26,6 @@ with open('./imagenet-labels.json') as f:
     labels = json.load(f)
 result = labels[np.array(predicted)[0]]
 img_name = url.split("/")[-1]
-# save_name = f"({img_name}, {result})"
-# f = open("/home/ubuntu/CC_Project_App_Tier/controller/output.txt","a")
-f = open("/Users/premkumaramanchi/CODE/DEV/CSE546-IaaS/APP-TIER-LOCAL/controller/output.txt", "a")
+#save_name = f"({img_name}, {result})"
 save_name = f"{img_name},{result}"
-print(url+'#'+result, file=f)
-# os.remove(path)
+print(f"{save_name}")

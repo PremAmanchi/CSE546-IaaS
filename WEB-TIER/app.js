@@ -85,9 +85,9 @@ const receiveMessages = async () => {
           ReceiptHandle: message.ReceiptHandle,
         };
 
-        const deleteResponse = await SQS.deleteMessage(deleteParams).promise();
+        // const deleteResponse = await SQS.deleteMessage(deleteParams).promise();
 
-        console.log("Message Deleted", deleteResponse);
+        // console.log("Message Deleted", deleteResponse);
       }
     } else {
       console.log("No messages found.");
@@ -123,7 +123,6 @@ app.post("/api/photo", (req, res) => {
     const dictSize = Object.keys(dataDict).length;
     console.log("dataDict Size : " + dictSize);
     res.send("File uploaded! Starting the process...");
-
     uploadFile(base64Image, fileNamePlusIp);
   });
 });
@@ -146,9 +145,8 @@ app.get("/receive", async function (req, res) {
     console.log("dataDict Size : " + resDictSize);
 
     while (result == null) {
-      receiveMessages();
-      const resDictSize = Object.keys(resultDict).length;
-      console.log("dataDict Size : " + resDictSize);
+      await receiveMessages();
+      console.log("dataDict Size : 98989" + resDictSize);
       result = resultDict[newKey];
     }
 

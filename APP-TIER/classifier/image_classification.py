@@ -28,7 +28,7 @@ result = labels[np.array(predicted)[0]]
 img_name = url.split("/")[-1]
 # save_name = f"({img_name}, {result})"
 # f = open("/home/ubuntu/CC_Project_App_Tier/controller/output.txt","a")
-f = open("/Users/premkumaramanchi/CODE/DEV/CSE546-IaaS/APP-TIER/controller/output.txt", "a")
+f = open("/home/ubuntu/app-tier/controller/output.txt", "a")
 save_name = f"{img_name},{result}"
 print(url+'#'+result, file=f)
 # os.remove(path)

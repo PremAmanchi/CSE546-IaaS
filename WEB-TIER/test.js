@@ -28,10 +28,9 @@ const receiveMessages = async () => {
     WaitTimeSeconds: 20,
   };
   console.log("belowSQS");
-
   try {
     const data = await SQS.receiveMessage(sqsParams).promise();
-    console.log("underSQS");
+    console.log("underSQS", data);
 
     if (data.Messages) {
       console.log(`Received ${data.Messages.length} messages.`);
@@ -49,9 +48,9 @@ const receiveMessages = async () => {
           ReceiptHandle: message.ReceiptHandle,
         };
 
-        const deleteResponse = await SQS.deleteMessage(deleteParams).promise();
+        // const deleteResponse = await SQS.deleteMessage(deleteParams).promise();
 
-        console.log("Message Deleted", deleteResponse);
+        // console.log("Message Deleted", deleteResponse);
       }
     } else {
       console.log("No messages found.");
