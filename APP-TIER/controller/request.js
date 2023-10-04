@@ -2,7 +2,6 @@ const AWS = require("aws-sdk");
 const fs = require("fs");
 const shell = require("shelljs");
 
-
 // Configure AWS
 AWS.config.update({
   region: "us-east-1",
@@ -22,9 +21,12 @@ const sqsParams = {
   MessageAttributeNames: ["All"],
   QueueUrl: requestQueueURL,
   VisibilityTimeout: 60,
-  WaitTimeSeconds: 120,
+  WaitTimeSeconds: 20,
 };
 
+console.log(
+  "=============================================================================================="
+);
 // Function to upload file to S3
 const uploadFile = (fileName, imageBuffer) => {
   const params = {
@@ -35,16 +37,16 @@ const uploadFile = (fileName, imageBuffer) => {
 
   S3.upload(params, function (err, data) {
     if (err) {
-      console.log(err);
+      console.log("Image not uploded to S3 : " + err);
     }
-    console.log("File uploaded successfully: ", data.Location);
+    console.log("Image uploaded successfully to S3: ", data.Location);
   });
 };
 
 // Function to process messages
 SQS.receiveMessage(sqsParams, function (err, data) {
   if (err) {
-    console.log("Receive Error", err);
+    console.log("Receive Error from request Queue : ", err);
   } else if (data.Messages) {
     // Delete message parameters
     const deleteParams = {
@@ -52,7 +54,7 @@ SQS.receiveMessage(sqsParams, function (err, data) {
       ReceiptHandle: data.Messages[0].ReceiptHandle,
     };
 
-    console.log("Polled the message!!");
+    console.log("Polled the message from SQS request Queue!!");
 
     // Get the image data from the message body
     const imageBuffer = Buffer.from(data.Messages[0].Body, "base64");
@@ -60,7 +62,7 @@ SQS.receiveMessage(sqsParams, function (err, data) {
     const imagePlusIp =
       data.Messages[0].MessageAttributes.fileNamePlusIp.StringValue;
     // const image_name = imagePlusIp.split("/")[0];
-    console.log("Image label : " + imagePlusIp);
+    console.log("Image label : " + imagePlusIp + "(appended the input IP)");
     // console.log("base 64 encoded Image : " + data.Messages[0].Body); //logs encoded image
 
     // Save the image locally
@@ -75,9 +77,10 @@ SQS.receiveMessage(sqsParams, function (err, data) {
     // Delete the processed message
     SQS.deleteMessage(deleteParams, function (err, data) {
       if (err) {
-        console.log("Delete Error", err);
+        console.log("Delete Error from SQS request Queue : ", err);
+        shell.exec("/home/ubuntu/app-tier/terminate.sh");
       } else {
-        console.log("Message Deleted", data);
+        console.log("Message Deleted from SQS request Queue : ", data);
       }
     });
   } else {

@@ -34,9 +34,10 @@ const sendMessage = (output) => {
 
   SQS.sendMessage(params, function (err, data) {
     if (err) {
-      console.log("Error : ", err);
+      console.log("Error : Results not sent to response SQS", err);
+      shell.exec("/home/ubuntu/app-tier/terminate.sh");
     } else {
-      console.log("Success", data.MessageId);
+      console.log("Success Results to response SQS : ", data.MessageId);
     }
   });
 };
@@ -45,7 +46,7 @@ fs.readFile(
   "/home/ubuntu/app-tier/controller/output.txt",
   "utf8",
   (err, data) => {
-    console.log(data);
+    console.log("Results from ML model : " + data);
     const key = data.split("#")[0];
     const value = data.split("#")[1];
     //   value = value.replace("\n", "").replace("\r", "");
@@ -66,18 +67,23 @@ fs.readFile(
         console.log("Result uploaded to S3:", data.Location);
 
         // Send the message to SQS after uploading to S3
-        console.log(file_content);
-        sendMessage(file_content);
+        console.log("Result content for SQS response Queue : " + file_content);
       }
     });
+
+    sendMessage(file_content);
   }
 );
 
 // Clean up local files
 fs.unlinkSync("/home/ubuntu/app-tier/controller/output.txt");
 
+console.log(
+  "********************************************************************************************************************************"
+);
+
 // Define the attribute name for message count
-const attributeName = 'ApproximateNumberOfMessages';
+const attributeName = "ApproximateNumberOfMessages";
 
 // Define the attribute names you want to retrieve
 const attributeNames = [attributeName];
@@ -88,9 +94,9 @@ const sizeParams = {
 };
 
 // Get the approximate number of messages in the queue
-SQS.getQueueAttributes(params, function(err, data) {
+SQS.getQueueAttributes(sizeParams, function (err, data) {
   if (err) {
-    console.error('Error getting queue attributes:', err);
+    console.error("Error getting queue attributes:", err);
     shell.exec("/home/ubuntu/app-tier/terminate.sh");
   } else {
     const messageCount = parseInt(data.Attributes[attributeName]);
