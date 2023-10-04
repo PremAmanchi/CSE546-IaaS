@@ -76,21 +76,29 @@ fs.readFile(
 // Clean up local files
 fs.unlinkSync("/home/ubuntu/app-tier/controller/output.txt");
 
-// SQS Parameters
-const receiveParams = {
-  // MessageAttributeNames: ["All"],
+// Define the attribute name for message count
+const attributeName = 'ApproximateNumberOfMessages';
+
+// Define the attribute names you want to retrieve
+const attributeNames = [attributeName];
+
+const sizeParams = {
   QueueUrl: requestQueueURL,
-  VisibilityTimeout: 10,
-  WaitTimeSeconds: 20,
+  AttributeNames: attributeNames,
 };
 
-// check for more messages to process or terminate
-SQS.receiveMessage(receiveParams, function (err, data) {
+// Get the approximate number of messages in the queue
+SQS.getQueueAttributes(params, function(err, data) {
   if (err) {
-    console.log("Receive Error", err);
-  } else if (data.Messages) {
-    shell.exec("/home/ubuntu/app-tier/app_tier.sh");
-  } else {
+    console.error('Error getting queue attributes:', err);
     shell.exec("/home/ubuntu/app-tier/terminate.sh");
+  } else {
+    const messageCount = parseInt(data.Attributes[attributeName]);
+    if (messageCount === 0) {
+      shell.exec("/home/ubuntu/app-tier/terminate.sh");
+    } else {
+      // Execute the app_tier.sh script only when there are messages
+      shell.exec("/home/ubuntu/app-tier/app_tier.sh");
+    }
   }
 });

@@ -21,8 +21,8 @@ const requestQueueURL =
 const sqsParams = {
   MessageAttributeNames: ["All"],
   QueueUrl: requestQueueURL,
-  VisibilityTimeout: 10,
-  WaitTimeSeconds: 20,
+  VisibilityTimeout: 60,
+  WaitTimeSeconds: 120,
 };
 
 // Function to upload file to S3
