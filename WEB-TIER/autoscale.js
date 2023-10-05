@@ -19,9 +19,9 @@ const userDataBase64 = Buffer.from(userDataScript).toString("base64");
 const sqs = new AWS.SQS();
 const ec2 = new AWS.EC2();
 
-async function createInstance() { 
+async function createInstance() {
   const params = {
-    ImageId: "ami-080b4dea04963c574",
+    ImageId: "ami-01e00dd88ded5f81b",
     MinCount: 1,
     MaxCount: 1,
     InstanceType: "t2.micro", // Replace with your desired instance type
