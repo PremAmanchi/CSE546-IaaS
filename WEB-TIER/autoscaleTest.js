@@ -1,6 +1,6 @@
 const AWS = require("aws-sdk");
-// const sleep = (milliseconds) =>
-//   new Promise((resolve) => setTimeout(resolve, milliseconds));
+const sleep = (milliseconds) =>
+  new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 // AWS Configuration
 AWS.config.update({
@@ -8,33 +8,38 @@ AWS.config.update({
   accessKeyId: "AKIAX7SHWYTIJIMWZGNT",
   secretAccessKey: "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",
 });
-const userDataBuffer = Buffer.from(
-  "#!/bin/bash\n/home/ubuntu/app-tier/app_tier.sh"
-).toString("base64");
-console.log(userDataBuffer);
-// Create an EC2 client
+
+// Define your SQS queue URL and other parameters
+const queueUrl =
+  "https://sqs.us-east-1.amazonaws.com/548832462032/CSE-546-PROJECT-1-REQUEST-QUEUE";
+const maxInstances = 10; // Maximum number of instances to create
+const userDataScript = "#!/bin/bash\n node /home/ubuntu/app-tier/script.js &";
+const userDataBase64 = Buffer.from(userDataScript).toString("base64");
+// Create an SQS and EC2 client
+const sqs = new AWS.SQS();
 const ec2 = new AWS.EC2();
 
-// Define your EC2 instance launch parameters
-const params = {
-  ImageId: "ami-080b4dea04963c574",
-  MinCount: 1,
-  MaxCount: 1,
-  InstanceType: "t2.micro", // Replace with your desired instance type
-  KeyName: "web-tier-1", // Replace with your key pair name
-  SecurityGroups: ["app-tier-sg"], // Replace with your security group name(s)
-  UserData: userDataBuffer,
-  // Add other instance parameters as needed
-};
+async function createInstance() {
+  const params = {
+    ImageId: "ami-037800be2d01c9c6a",
+    MinCount: 1,
+    MaxCount: 1,
+    InstanceType: "t2.micro", // Replace with your desired instance type
+    KeyName: "web-tier-1", // Replace with your key pair name
+    SecurityGroups: ["app-tier-sg"], // Replace with your security group name(s)
+    UserData: userDataBase64,
+    // Add other instance parameters as needed
+  };
 
-// Launch the EC2 instance
-ec2.runInstances(params, (err, data) => {
-  if (err) {
-    console.error("Error launching EC2 instance:", err);
-  } else {
-    console.log(
-      "Successfully launched EC2 instance with ID:",
-      data.Instances[0].InstanceId
-    );
+  try {
+    const data = await ec2.runInstances(params).promise();
+    const instanceId = data.Instances[0].InstanceId;
+    console.log(`Created EC2 instance with ID: ${instanceId}`);
+    return instanceId;
+  } catch (error) {
+    console.error("Error creating EC2 instance:", error);
+    return null;
   }
-});
+}
+createInstance();
+sleep(100000);

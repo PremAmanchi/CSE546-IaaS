@@ -9,7 +9,7 @@ const port = 3000;
 app.use(bodyParser.json());
 const storage = multer.memoryStorage();
 // change the userPhoto name to the key given in postman
-const upload = multer({ storage: storage }).array("userPhoto", 1);
+const upload = multer({ storage: storage }).array("myfile", 1);
 
 // AWS Configuration
 AWS.config.update({
@@ -97,7 +97,7 @@ const receiveMessages = async () => {
   }
 };
 
-app.post("/api/photo", (req, res) => {
+app.post("/", (req, res) => {
   upload(req, res, (err) => {
     if (err) {
       console.log(err);
@@ -146,7 +146,7 @@ app.get("/receive", async function (req, res) {
 
     while (result == null) {
       await receiveMessages();
-      console.log("dataDict Size : 98989" + resDictSize);
+      console.log("dataDict Size : " + resDictSize);
       result = resultDict[newKey];
     }
 

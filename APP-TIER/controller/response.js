@@ -37,7 +37,7 @@ const deleteMessage = util.promisify(SQS.deleteMessage).bind(SQS);
     const key = data.split("#")[0];
     const value = data.split("#")[1];
     const file_content = key + "=" + value;
-    const fileName = key.split(".")[0] + ".txt";
+    const fileName = key.split("/")[1] + ".txt";
 
     // Remove the local file
     await fs.unlink("/home/ubuntu/app-tier/classifier/" + key);
@@ -91,7 +91,7 @@ const deleteMessage = util.promisify(SQS.deleteMessage).bind(SQS);
       .bind(SQS)(sizeParams);
 
     const messageCount = parseInt(sqsQueueAttributes.Attributes[attributeName]);
-    if (messageCount === 0) {
+    if (messageCount === 0) {    
       shell.exec("/home/ubuntu/app-tier/terminate.sh");
     } else {
       shell.exec("/home/ubuntu/app-tier/app_tier.sh");

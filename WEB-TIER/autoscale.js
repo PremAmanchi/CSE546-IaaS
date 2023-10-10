@@ -1,6 +1,6 @@
 const AWS = require("aws-sdk");
 const sleep = (milliseconds) =>
-  new Promise((resolve) => setTimeout(resolve, milliseconds));
+new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 // AWS Configuration
 AWS.config.update({
@@ -12,16 +12,22 @@ AWS.config.update({
 // Define your SQS queue URL and other parameters
 const queueUrl =
   "https://sqs.us-east-1.amazonaws.com/548832462032/CSE-546-PROJECT-1-REQUEST-QUEUE";
-const maxInstances = 10; // Maximum number of instances to create
-const userDataScript = "#!/bin/bash\n/home/ubuntu/app-tier/app_tier.sh";
+const maxInstances = 20; // Maximum number of instances to create
+const userDataScript =
+  "#!/bin/bash\nsu - ubuntu -c /home/ubuntu/app-tier/app_tier.sh";
 const userDataBase64 = Buffer.from(userDataScript).toString("base64");
 // Create an SQS and EC2 client
 const sqs = new AWS.SQS();
 const ec2 = new AWS.EC2();
 
+let instanceCounter = 1;
+
 async function createInstance() {
+  const instanceName = `app-tier-${instanceCounter}`;
+  instanceCounter++;
+
   const params = {
-    ImageId: "ami-01e00dd88ded5f81b",
+    ImageId: "ami-0b25e5d8fc7a6c902",
     MinCount: 1,
     MaxCount: 1,
     InstanceType: "t2.micro", // Replace with your desired instance type
@@ -29,6 +35,17 @@ async function createInstance() {
     SecurityGroups: ["app-tier-sg"], // Replace with your security group name(s)
     UserData: userDataBase64,
     // Add other instance parameters as needed
+    TagSpecifications: [
+      {
+        ResourceType: "instance",
+        Tags: [
+          {
+            Key: "Name",
+            Value: instanceName,
+          },
+        ],
+      },
+    ],
   };
 
   try {
@@ -77,14 +94,13 @@ async function scaleInScaleOut() {
     if (totalMsgs > 0 && totalMsgs > runningInstances) {
       const instancesToCreate = Math.min(
         maxInstances - runningInstances,
-        totalMsgs - runningInstances
+        (totalMsgs/5)+1
       );
+
       if (instancesToCreate > 0) {
         for (let i = 0; i < instancesToCreate; i++) {
           const instanceId = await createInstance();
-          //   if (instanceId) {
-          //     // Add logic for any post-creation tasks if needed
-          //   }
+          // add any changes if required to instance id;
         }
       }
     }
