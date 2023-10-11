@@ -106,7 +106,7 @@ async function scaleInScaleOut() {
     console.log(`Messages in SQS Queue: ${totalMsgs}`);
     console.log(`Running EC2 Instances: ${runningInstances}`);
 
-    if (totalMsgs > 0 && totalMsgs > runningInstances) {
+    if (totalMsgs > 0 && totalMsgs >= runningInstances) {
       const instancesToCreate = Math.min(
         maxInstances - runningInstances,
         totalMsgs / 5 + 1
