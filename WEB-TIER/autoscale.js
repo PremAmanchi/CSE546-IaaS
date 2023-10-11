@@ -1,31 +1,37 @@
+// Import required AWS SDK and define a sleep function
 const AWS = require("aws-sdk");
 const sleep = (milliseconds) =>
-new Promise((resolve) => setTimeout(resolve, milliseconds));
+  new Promise((resolve) => setTimeout(resolve, milliseconds));
 
-// AWS Configuration
+// Configure AWS credentials and region
 AWS.config.update({
   region: "us-east-1",
   accessKeyId: "AKIAX7SHWYTIJIMWZGNT",
   secretAccessKey: "+IyMj0veGD7ByGhpNtnRuARjy3kzQz9ujiMHnlTU",
 });
 
-// Define your SQS queue URL and other parameters
+// Define the SQS queue URL and other parameters
 const queueUrl =
   "https://sqs.us-east-1.amazonaws.com/548832462032/CSE-546-PROJECT-1-REQUEST-QUEUE";
-const maxInstances = 20; // Maximum number of instances to create
+const maxInstances = 20; // Maximum number of instances to create + count of instance present in EC2
 const userDataScript =
   "#!/bin/bash\nsu - ubuntu -c /home/ubuntu/app-tier/app_tier.sh";
 const userDataBase64 = Buffer.from(userDataScript).toString("base64");
-// Create an SQS and EC2 client
+
+// Create an SQS and EC2 client instances
 const sqs = new AWS.SQS();
 const ec2 = new AWS.EC2();
 
+// Initialize a counter for naming instances
 let instanceCounter = 1;
 
+// Function to create an EC2 instance
 async function createInstance() {
+  // Generate a unique instance name
   const instanceName = `app-tier-${instanceCounter}`;
   instanceCounter++;
 
+  // Define parameters for creating the instance
   const params = {
     ImageId: "ami-0b25e5d8fc7a6c902",
     MinCount: 1,
@@ -41,7 +47,7 @@ async function createInstance() {
         Tags: [
           {
             Key: "Name",
-            Value: instanceName,
+            Value: instanceName, // Set the instance name
           },
         ],
       },
@@ -49,6 +55,7 @@ async function createInstance() {
   };
 
   try {
+    // Create the EC2 instance
     const data = await ec2.runInstances(params).promise();
     const instanceId = data.Instances[0].InstanceId;
     console.log(`Created EC2 instance with ID: ${instanceId}`);
@@ -59,6 +66,7 @@ async function createInstance() {
   }
 }
 
+// Function to get the count of messages in the SQS queue
 async function getQueueMessageCount() {
   try {
     const attributes = await sqs
@@ -74,10 +82,16 @@ async function getQueueMessageCount() {
   }
 }
 
+// Main function for scaling in and out
 async function scaleInScaleOut() {
   while (true) {
+    // Get the total number of messages in the SQS queue
     const totalMsgs = await getQueueMessageCount();
+
+    // Get information about running EC2 instances
     const instances = await ec2.describeInstances().promise();
+
+    // Calculate the count of running EC2 instances
     const runningInstances = instances.Reservations.reduce(
       (count, reservation) =>
         count +
@@ -88,19 +102,21 @@ async function scaleInScaleOut() {
         ).length,
       0
     );
+
     console.log(`Messages in SQS Queue: ${totalMsgs}`);
     console.log(`Running EC2 Instances: ${runningInstances}`);
 
     if (totalMsgs > 0 && totalMsgs > runningInstances) {
       const instancesToCreate = Math.min(
         maxInstances - runningInstances,
-        (totalMsgs/5)+1
+        totalMsgs / 5 + 1
       );
 
       if (instancesToCreate > 0) {
         for (let i = 0; i < instancesToCreate; i++) {
           const instanceId = await createInstance();
-          // add any changes if required to instance id;
+          // Add any additional logic if required for the newly created instance
+          // In our case all we need to do is instantiate the ec2 only
         }
       }
     }

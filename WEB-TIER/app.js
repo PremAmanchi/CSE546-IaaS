@@ -46,7 +46,7 @@ const uploadFile = (base64Image, fileNamePlusIp) => {
     if (err) {
       console.error("Error sending message to SQS:", err);
     } else {
-      console.log("Message sent successfully:", data.MessageId);
+      console.log("Message sent successfully :", data.MessageId);
     }
   });
 };
@@ -85,7 +85,7 @@ const receiveMessages = async () => {
           ReceiptHandle: message.ReceiptHandle,
         };
 
-        // const deleteResponse = await SQS.deleteMessage(deleteParams).promise();
+        const deleteResponse = await SQS.deleteMessage(deleteParams).promise();
 
         // console.log("Message Deleted", deleteResponse);
       }
@@ -122,7 +122,7 @@ app.post("/", (req, res) => {
     dataDict[ipAddress] = fileNamePlusIp;
     const dictSize = Object.keys(dataDict).length;
     console.log("dataDict Size : " + dictSize);
-    res.send("File uploaded! Starting the process...");
+    res.send("Image File uploaded!}");
     uploadFile(base64Image, fileNamePlusIp);
   });
 });
